@@ -1,0 +1,23 @@
+{
+  "name": "19-03-21-node-utils",
+  "version": "1.0.0",
+  "description": "写一写平时自己用到的node.js小工具，不断学习node.js",
+  "main": "socket.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/caoxiemeihao/node-utils.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/caoxiemeihao/node-utils/issues"
+  },
+  "homepage": "https://github.com/caoxiemeihao/node-utils#readme",
+  "dependencies": {
+    "socket.io": "^2.2.0"
+  }
+}
