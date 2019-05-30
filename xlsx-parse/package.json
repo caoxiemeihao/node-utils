@@ -1,15 +1,28 @@
 {
   "name": "xlsx-parse",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "专为Ning ning er开发的Excel解析、下载",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron .",
+    "dev": ".\\node_modules\\.bin\\gulp serve",
+    "package": "electron-package . Excel-utils --overwrite"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "repository": "https://github.com/caoxiemeihao/node-utils",
+  "keywords": [
+    "Electron",
+    "excel",
+    "xlsx"
+  ],
+  "author": "草鞋没号",
+  "license": "CC0-1.0",
+  "devDependencies": {
+    "electron": "^5.0.2",
+    "electron-connect": "^0.6.3",
+    "gulp": "^4.0.2"
+  },
   "dependencies": {
+    "vue": "^2.6.10",
     "xlsx": "^0.14.3"
   }
 }
