@@ -21,7 +21,7 @@ const vm = new Vue({
       utils.readLocalFile().then(res => {
         console.log(res[0])
         XLSX.parse(res[0].path, ({ cmd, data }) => {
-          console.log(vm.logInfo = `🍡 读取完成`, cmd, data)
+          console.log(vm.logInfo = `🍡 读取完成，开始下载...`, cmd, data)
           if (cmd === 'read-xlsx') {
             let arr = data.map(json => {
               let urls = null
@@ -73,17 +73,17 @@ const vm = new Vue({
 
         XLSX.downloadIMG({ url: json.urls, filename, cb: ev => {
           if (ev.cmd === 'img-data') {
-            vm.logInfo = `🚀️ [${now}/${arr.length}] 下载中...`
+            vm.logInfo = `🚀️ [${now + 1}/${arr.length}] 下载中...`
           } else if (ev.cmd === 'img-end') {
             now++
 
-            vm.logInfo = `🚀️ [${now}/${arr.length}] 下载中...`
+            vm.logInfo = `🚀️ [${now + 1}/${arr.length}] 下载中...`
             // console.log(vm.logInfo)
             if (arr[now]) {
               download(arr[now])
             } else {
               // alert('下载完了')
-              vm.logInfo = `🍺 [${now}/${arr.length}] 下载完成！`
+              vm.logInfo = `🍺 [${now + 1}/${arr.length}] 下载完成！`
             }
           }
         } })
@@ -107,9 +107,9 @@ const vm = new Vue({
       updateApp({
         cb: ({ cmd, now, files, _files }) => {
           if (cmd === 'data') {
-            console.log(vm.logInfo = `🚀️ [${now}/${files.length}] 下载中... ${files[now]}`)
+            console.log(vm.logInfo = `🚀️ [${now + 1}/${files.length}] 下载中... ${files[now]}`)
           } else if (cmd === 'download-end') {
-            console.log(vm.logInfo = '🍺 文件下载完成\n', now, files, _files.length)
+            console.log(vm.logInfo = '🍺 文件下载完成\n', now + 1, files, _files.length)
           } else if (cmd === 'update-end') {
             console.log(vm.logInfo = '🎉 🎉 🎉 🎉 升级完成，请重新打开软件 🎉 🎉 🎉 🎉')
           }
