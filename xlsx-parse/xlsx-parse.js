@@ -39,8 +39,8 @@ function downloadIMG({ url, filename, cb }) {
   request
     .get(url)
     .on('response', res => {
-      console.log(res.statusCode)
-      console.log(res.headers['content-type'])
+      // console.log(res.statusCode)
+      console.log(res.statusCode, res.headers['content-type'])
     })
     .on('data', buffer => {
       // console.log(buffer)

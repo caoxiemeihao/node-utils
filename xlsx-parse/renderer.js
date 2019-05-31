@@ -2,20 +2,19 @@
 // be executed in the renderer process for that window.
 // All of the Node.js APIs are available in this process.
 
-const electron = require('electron')
-const ICP = electron.ipcRenderer
-const { dialog } = electron.remote
+const { ipcRenderer, remote } = require('electron')
 const XLSX = require('./xlsx-parse')
 const utils = require('./utils')
+const path = require('path')
 
 const vm = new Vue({
   data: {
     downloadPath: window.localStorage.getItem('download-path') || '',
+    homedir: '',
+    downloadInfo: '',
   },
   methods: {
     uploadFile() {
-      let _this = this
-
       utils.readLocalFile().then(res => {
         console.log(res[0])
         XLSX.parse(res[0].path, ({ cmd, data }) => {
@@ -34,17 +33,15 @@ const vm = new Vue({
               }
             }).filter(json => json.urls) // {name: "#2780", URL: "https://uploadery.s3.amazonaws.com/meta-charms/9e475a10-FB_IMG_1558777592261.jpg"}
 
-            _this.downloadIMG(arr)
+            vm.downloadIMG(arr)
           }
         })
       })
     },
     choosePath() {
-      let _this = this
-
-      dialog.showOpenDialog({
+      remote.dialog.showOpenDialog({
         //默认路径
-        defaultPath :'../Desktop',
+        defaultPath: path.join(vm.homedir, 'Desktop'), // 桌面
         //选择操作，此处是打开文件夹
         properties: [
           'openDirectory',
@@ -56,28 +53,57 @@ const vm = new Vue({
       },
         res => { // ["C:\Users\30848\Desktop"]
         //回调函数内容，此处是将路径内容显示在input框内
-        window.localStorage.setItem('download-path', _this.downloadPath = res[0])
+        window.localStorage.setItem('download-path', vm.downloadPath = res[0])
       })
     },
     downloadIMG(arr = []) {
-      let _this = this
-
-      if (!_this.downloadPath) {
+      if (!this.downloadPath) {
         this.choosePath()
         return
       }
 
-      console.log(arr)
+      let now = 0
 
+      download(arr[now])
+      function download(json) {
+        let filename = `${vm.downloadPath}\\${json.name}${json.urls.substring(json.urls.lastIndexOf('.'))}`
+
+        XLSX.downloadIMG({ url: json.urls, filename, cb: ev => {
+          if (ev.cmd === 'img-data') {
+
+          } else if (ev.cmd === 'img-end') {
+            now++
+
+            vm.downloadInfo = `[${now}/${arr.length}] 下载中...`
+            console.log(vm.downloadInfo)
+            if (arr[now]) {
+              download(arr[now])
+            } else {
+              // alert('下载完了')
+              vm.downloadInfo = `[${now}/${arr.length}] 下载完成！`
+            }
+          }
+        } })
+      }
+
+      /*
       arr.forEach(json => {
-        let filename = `${_this.downloadPath}\\${json.name}${json.urls.substring(json.urls.lastIndexOf('.'))}`
+        let filename = `${vm.downloadPath}\\${json.name}${json.urls.substring(json.urls.lastIndexOf('.'))}`
 
         XLSX.downloadIMG({
-          url: json.URL,
+          url: json.urls,
           filename,
         })
       })
+      */
+    },
+    setDefaultPath() {
+      ipcRenderer.on('homedir', (event, homedir) => vm.homedir = homedir)
+      ipcRenderer.send('homedir')
     }
+  },
+  mounted() {
+    this.setDefaultPath()
   }
 }).$mount('#app')
 

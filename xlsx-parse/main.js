@@ -1,6 +1,6 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow } = require('electron')
-const IPC = require('electron').ipcMain
+const { app, BrowserWindow, ipcMain } = require('electron')
+const OS = require('os')
 
 // -----------------------------------------------
 const client = require('electron-connect').client
@@ -36,9 +36,7 @@ function createWindow () {
     mainWindow = null
   })
 
-  // ---------------------
-  toggleDevTools(true)
-  // ---------------------
+  init()
 }
 
 // This method will be called when Electron has finished
@@ -70,6 +68,13 @@ app.on('activate', function () {
 // code. You can also put them in separate files and require them here.
 
 // -----------------------------------------------------------------------------
+function init() {
+  toggleDevTools(true)
+  ipcMain.on('homedir', event =>event.sender.send('homedir', OS.homedir()))
+  // setTimeout(() => mainWindow.webContents.send('homedir', OS.homedir()), 1000)
+}
+
+
 // 切换 DevTools
 function toggleDevTools(bool) {
   if (mainWindow) {
