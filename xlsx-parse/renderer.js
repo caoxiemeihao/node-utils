@@ -21,7 +21,7 @@ const vm = new Vue({
       utils.readLocalFile().then(res => {
         console.log(res[0])
         XLSX.parse(res[0].path, ({ cmd, data }) => {
-          console.log(cmd, data)
+          console.log(vm.logInfo = `🍡 读取完成`, cmd, data)
           if (cmd === 'read-xlsx') {
             let arr = data.map(json => {
               let urls = null
@@ -73,7 +73,7 @@ const vm = new Vue({
 
         XLSX.downloadIMG({ url: json.urls, filename, cb: ev => {
           if (ev.cmd === 'img-data') {
-
+            vm.logInfo = `🚀️ [${now}/${arr.length}] 下载中...`
           } else if (ev.cmd === 'img-end') {
             now++
 
@@ -107,7 +107,7 @@ const vm = new Vue({
       updateApp({
         cb: ({ cmd, now, files, _files }) => {
           if (cmd === 'data') {
-            console.log(vm.logInfo = `🚀️ [${now}/${files.length}] ${files[now]} 下载中...`)
+            console.log(vm.logInfo = `🚀️ [${now}/${files.length}] 下载中... ${files[now]}`)
           } else if (cmd === 'download-end') {
             console.log(vm.logInfo = '🍺 文件下载完成\n', now, files, _files.length)
           } else if (cmd === 'update-end') {
