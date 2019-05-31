@@ -14,9 +14,11 @@
     and Electron <script>document.write(process.versions.electron)</script>. -->
 
     <div id="app" class="container-fluid">
-      <div class="">
-        <span class="btn btn-light btn-sm mt-2" @click="uploadFile">上传文件</span>
+      <div class="pt-2">
+        <span class="btn btn-light btn-sm ml-2" @click="choosePath">选择下载路径</span>
+        <span class="btn btn-light btn-sm" @click="uploadFile">上传文件</span>
       </div>
+      <div class="alert alert-dark mt-2">{{downloadPath}}</div>
     </div>
 
 
