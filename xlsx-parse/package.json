@@ -21,12 +21,13 @@
   "author": "草鞋没号",
   "license": "CC0-1.0",
   "devDependencies": {
-  },
-  "dependencies": {
-    "vue": "^2.6.10",
-    "xlsx": "^0.14.3",
     "electron": "^5.0.2",
     "electron-connect": "^0.6.3",
     "gulp": "^4.0.2"
+  },
+  "dependencies": {
+    "request": "^2.88.0",
+    "vue": "^2.6.10",
+    "xlsx": "^0.14.3"
   }
 }

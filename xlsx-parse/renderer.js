@@ -6,12 +6,15 @@ const { ipcRenderer, remote } = require('electron')
 const XLSX = require('./xlsx-parse')
 const utils = require('./utils')
 const path = require('path')
+const { getVersion, updateApp } = require('./version')
 
 const vm = new Vue({
   data: {
     downloadPath: window.localStorage.getItem('download-path') || '',
     homedir: '',
-    downloadInfo: '',
+    logInfo: '',
+    local_version: '0.0.0',
+    remote_version: '0.0.0',
   },
   methods: {
     uploadFile() {
@@ -74,36 +77,49 @@ const vm = new Vue({
           } else if (ev.cmd === 'img-end') {
             now++
 
-            vm.downloadInfo = `[${now}/${arr.length}] 下载中...`
-            console.log(vm.downloadInfo)
+            vm.logInfo = `🚀️ [${now}/${arr.length}] 下载中...`
+            // console.log(vm.logInfo)
             if (arr[now]) {
               download(arr[now])
             } else {
               // alert('下载完了')
-              vm.downloadInfo = `[${now}/${arr.length}] 下载完成！`
+              vm.logInfo = `🍺 [${now}/${arr.length}] 下载完成！`
             }
           }
         } })
       }
-
-      /*
-      arr.forEach(json => {
-        let filename = `${vm.downloadPath}\\${json.name}${json.urls.substring(json.urls.lastIndexOf('.'))}`
-
-        XLSX.downloadIMG({
-          url: json.urls,
-          filename,
-        })
-      })
-      */
     },
     setDefaultPath() {
       ipcRenderer.on('homedir', (event, homedir) => vm.homedir = homedir)
       ipcRenderer.send('homedir')
+    },
+    getVersion() {
+      getVersion(({ local_version, remote_version }) => {
+        vm.local_version = local_version
+        vm.remote_version = remote_version
+      })
+    },
+    upgradeApp() {
+      if (vm.remote_version === vm.local_version) {
+        if (!window.confirm('当前版本是最新的哦，确定要更新嘛，亲？ ^_^')) return
+      }
+
+      updateApp({
+        cb: ({ cmd, now, files, _files }) => {
+          if (cmd === 'data') {
+            console.log(vm.logInfo = `🚀️ [${now}/${files.length}] ${files[now]} 下载中...`)
+          } else if (cmd === 'download-end') {
+            console.log(vm.logInfo = '🍺 文件下载完成\n', now, files, _files.length)
+          } else if (cmd === 'update-end') {
+            console.log(vm.logInfo = '🎉 🎉 🎉 🎉 升级完成，请重新打开软件 🎉 🎉 🎉 🎉')
+          }
+        }
+      })
     }
   },
   mounted() {
     this.setDefaultPath()
+    this.getVersion()
   }
 }).$mount('#app')
 

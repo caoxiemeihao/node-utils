@@ -3,9 +3,6 @@ const { app, BrowserWindow, ipcMain } = require('electron')
 const OS = require('os')
 const { config } = require('./config')
 
-// -----------------------------------------------
-const client = require('electron-connect').client
-// -----------------------------------------------
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -51,7 +48,9 @@ function createWindow () {
 app.on('ready', () => {
   // Connect to server process
   createWindow()
-  client.create(mainWindow)  // 刷新监听
+  if (config.env === 'development') {
+    require('electron-connect').client.create(mainWindow)  // 刷新监听
+  }
 })
 // ---------------------------------------
 
@@ -73,7 +72,9 @@ app.on('activate', function () {
 
 // -----------------------------------------------------------------------------
 function init() {
-  toggleDevTools(true)
+  if (config.env === 'development') {
+    toggleDevTools(true)
+  }
   ipcMain.on('homedir', event =>event.sender.send('homedir', OS.homedir()))
   // setTimeout(() => mainWindow.webContents.send('homedir', OS.homedir()), 1000)
 }

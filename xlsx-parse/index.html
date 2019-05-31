@@ -19,7 +19,21 @@
         <span class="btn btn-light btn-sm" @click="uploadFile">上传文件</span>
       </div>
       <div class="alert alert-dark mt-2">{{downloadPath}}</div>
-      <div class="alert alert-info mt-2">{{downloadInfo}}</div>
+
+      <div class="fixed-bottom alert alert-info rounded-0 d-flex">
+        <div class="flex-fill">
+          {{logInfo}}
+        </div>
+        <div class="flex-fill text-right">
+          <span class="">当前 {{local_version}}</span>
+          <span class="ml-2">最新 {{remote_version}}</span>
+          <span
+            class="ml-2 btn btn-sm"
+            :class="remote_version > local_version ? 'btn-success' : 'btn-light'"
+            @click="upgradeApp"
+          >升级</span>
+        </div>
+      </div>
     </div>
 
 
@@ -27,19 +41,14 @@
     <script src="./front/vue.js"></script>
     <script>
       // You can also require other files to run in this process
+      const { config }  = require('./config')
       require('./renderer.js')
+      require('./version.js')
 
-      if (process.execPath.includes('electron.exe')) {
-        // 开发路径
-        // process.execPath: "D:\workspace\github\node-utils\xlsx-parse\node_modules\electron\dist\electron.exe"
-        // 运行路径
-        // process.execPath: "D:\workspace\github\node-utils\xlsx-parse\dist\excel-utils-win32-x64\excel-utils.exe"
-
+      if (config.env === 'development') {
         // Connect to server process
         require('electron-connect').client.create()
       }
-
-      require('./version.js')
     </script>
   </body>
 </html>
