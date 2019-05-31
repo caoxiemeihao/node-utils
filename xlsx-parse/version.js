@@ -1,7 +1,8 @@
 const fs = require('fs')
 const { getGithubData } = require('./utils')
+const path = require('path')
 
-const files = [
+const defaultFiles = [
   'index.html',
   'renderer.js',
   'xlsx-parse.js',
@@ -12,7 +13,8 @@ const files = [
 ]
 
 function getVersion(cb = _ => _) {
-  const package_json_local = JSON.parse(fs.readFileSync('./package.json', 'utf-8'))
+  const package_json_local = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'package.json'), 'utf-8'))
 
   getGithubData('package.json').then(file => {
     const package_json_remote = JSON.parse(file)
@@ -24,15 +26,7 @@ function getVersion(cb = _ => _) {
   })
 }
 
-function updateApp({ files = [
-  'index.html',
-  'renderer.js',
-  'xlsx-parse.js',
-  'utils.js',
-  'main.js',
-  'config.js',
-  'package.json'
-], cb = _ => _ }) {
+function updateApp({ files = defaultFiles, cb = _ => _ }) {
   let now = 0
   let _files = []
 
@@ -45,9 +39,30 @@ function updateApp({ files = [
       if (files[now]) {
         downloadFile(files[now])
       } else {
-        cb({ cmd: 'end', now, files, _files })
+        cb({ cmd: 'download-end', now, files, _files })
+        writeFiles({ files, _files, cb: _ => {
+          cb({ cmd: 'update-end', now, files, _files })
+        } })
       }
     })
+  }
+}
+
+function writeFiles({ files, _files, cb = _ => _ }) {
+  let now = 0
+
+  writeFile(files[now], _files[now])
+  function writeFile(filepath, data) {
+    let _path = path.join(__dirname, filepath)
+
+    console.log('🍺', _path)
+    fs.writeFileSync(_path, data)
+    now++
+    if (files[now]) {
+      writeFile(files[now], _files[now])
+    } else {
+      cb()
+    }
   }
 }
 

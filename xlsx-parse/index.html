@@ -29,8 +29,16 @@
       // You can also require other files to run in this process
       require('./renderer.js')
 
-      // Connect to server process
-      require('electron-connect').client.create()
+      if (process.execPath.includes('electron.exe')) {
+        // 开发路径
+        // process.execPath: "D:\workspace\github\node-utils\xlsx-parse\node_modules\electron\dist\electron.exe"
+        // 运行路径
+        // process.execPath: "D:\workspace\github\node-utils\xlsx-parse\dist\excel-utils-win32-x64\excel-utils.exe"
+
+        // Connect to server process
+        require('electron-connect').client.create()
+      }
+
       require('./version.js')
     </script>
   </body>
