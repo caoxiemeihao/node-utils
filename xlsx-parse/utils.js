@@ -1,3 +1,50 @@
+const https = require('https')
+
+function getGithubData(filepath = '', success = _ => _, error = _ => _) {
+  return new Promise((resolve, reject) => {
+    const url = githubURL(filepath)
+
+    https.get(url, res => {
+      const statusCode = res.statusCode
+
+      console.log(`statusCode: ${statusCode} -> ${url}`)
+
+      if (statusCode !== 200) {
+        error(res)
+        reject(res)
+        res.resume() // 消耗响应数据以释放内存
+
+        return
+      }
+
+      res.setEncoding('utf-8')
+
+      let rawData = ''
+
+      res.on('data', chunk => {
+        rawData += chunk
+        // console.log(rawData)
+      }).on('end', _ => {
+        success(rawData)
+        resolve(rawData)
+      }).on('error', e => {
+        error(e)
+        reject(e)
+      })
+    })
+
+  })
+}
+
+
+function githubURL(filepath) {
+  // github 项目文件地址
+  const URL = 'https://raw.githubusercontent.com/caoxiemeihao/node-utils/master/xlsx-parse/'
+
+  return `${URL + filepath.replace('/', '')}?r=${Date.now()}`
+}
+
+
 /**
  * 读取本地图片，文件
  * [默认读取图片]
@@ -21,5 +68,6 @@ function readLocalFile(param = {}) {
 }
 
 module.exports = {
+  getGithubData,
   readLocalFile,
 }

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "electron .",
     "dev": ".\\node_modules\\.bin\\gulp serve",
-    "package": "electron-package . Excel-utils --overwrite"
+    "package": "electron-packager ./ excel-utils --out ./dist --overwrite"
   },
   "repository": "https://github.com/caoxiemeihao/node-utils",
   "keywords": [
@@ -14,15 +14,19 @@
     "excel",
     "xlsx"
   ],
+  "README": {
+    "打包命令": "electron-packager ./ myapp --out ./OutApp --version 1.7.9 --overwrite --icon=./app/img/icon/icon.ico",
+    "electron、electron-connect、gulp": "这三个模块，属于 devDependencies，先直接放一起，省的打包完报错"
+  },
   "author": "草鞋没号",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^5.0.2",
-    "electron-connect": "^0.6.3",
-    "gulp": "^4.0.2"
   },
   "dependencies": {
     "vue": "^2.6.10",
-    "xlsx": "^0.14.3"
+    "xlsx": "^0.14.3",
+    "electron": "^5.0.2",
+    "electron-connect": "^0.6.3",
+    "gulp": "^4.0.2",
   }
 }

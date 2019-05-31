@@ -1,6 +1,7 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, ipcMain } = require('electron')
 const OS = require('os')
+const { config } = require('config')
 
 // -----------------------------------------------
 const client = require('electron-connect').client
@@ -13,13 +14,16 @@ let mainWindow = null
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
-    x: 4,
-    y: 9,
-    webPreferences: {
-      nodeIntegration: true
-    }
+    ...{
+      width: 800,
+      height: 600,
+      // x: 4,
+      // y: 9,
+      webPreferences: {
+        nodeIntegration: true
+      }
+    },
+    ...config.mainWindow
   })
 
   // and load the index.html of the app.
