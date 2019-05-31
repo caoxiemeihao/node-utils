@@ -38,7 +38,6 @@ function updateApp({ files = [
 
   downloadFile(files[now])
   function downloadFile(filepath) {
-    console.log(filepath)
     getGithubData(filepath).then(file => {
       _files.push(file)
       now++

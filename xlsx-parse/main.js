@@ -1,7 +1,7 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, ipcMain } = require('electron')
 const OS = require('os')
-const { config } = require('config')
+const { config } = require('./config')
 
 // -----------------------------------------------
 const client = require('electron-connect').client

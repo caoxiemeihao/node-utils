@@ -18,9 +18,9 @@ getVersion(({ local_version, remote_version }) => {
 updateApp({
   cb: ({ cmd, now, files, _files }) => {
     if (cmd === 'data') {
-      console.log(now, files, _files)
+      // console.log(now, files, _files)
     } else if (cmd === 'end') {
-      console.log(now, files, _files)
+      console.log(now, files, _files.length)
     }
   }
 })

@@ -7,7 +7,7 @@ function getGithubData(filepath = '', success = _ => _, error = _ => _) {
     https.get(url, res => {
       const statusCode = res.statusCode
 
-      console.log(`statusCode: ${statusCode} -> ${url}`)
+      console.log(`[statusCode: ${statusCode}] -> ${url}`)
 
       if (statusCode !== 200) {
         error(res)
