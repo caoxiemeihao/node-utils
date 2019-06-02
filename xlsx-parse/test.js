@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const XLSX = require('xlsx')
 
-const { getGithubData } = require('./utils')
+const { getGithubData, exist_dir_file } = require('./utils')
 const { getVersion, updateApp } = require('./version')
 
 /*
@@ -38,6 +38,7 @@ updateApp({
 })
 */
 
+/* 19-06-02 数据提取
 const workbook = XLSX.readFile(path.join(__dirname, './xlsx/定制商品表格.xls'))
 const firstSheetName = workbook.SheetNames[0]
 const sheetJsonData = workbook.Sheets[firstSheetName]
@@ -83,4 +84,10 @@ Object.keys(sheetJsonData)
   })
 
 console.log(expectedArr)
+
+fs.writeFileSync(path.join(__dirname, './xlsx/提取后的数据.json'), JSON.stringify(expectedArr), 'utf8')
+*/
+
+// 19-06-02 检测文件夹、文件是否存在
+// console.log(exist_dir_file('./xlsx/download.png'))
 

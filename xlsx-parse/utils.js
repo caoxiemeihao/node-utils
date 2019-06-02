@@ -1,3 +1,4 @@
+const fs = require('fs')
 const https = require('https')
 
 function getGithubData(filepath = '', success = _ => _, error = _ => _) {
@@ -67,7 +68,18 @@ function readLocalFile(param = {}) {
   })
 }
 
+function exist_dir_file(dirPath) {
+  try {
+    fs.accessSync(path.join(__dirname, dirPath), fs.F_OK)
+    return true
+  } catch (e) {
+    console.log('No such file or directory ->', e.path)
+    return false
+  }
+}
+
 module.exports = {
   getGithubData,
   readLocalFile,
+  exist_dir_file,
 }
