@@ -1,7 +1,13 @@
 exports.config = {
   mainWindow: {
+    // width: 800,
+    // height: 600,
+  },
+  mainWindow_dev: {
     x: 4,
     y: 9,
+    width: 1000,
+    height: 800,
   },
   env: (() => {
     if (process.execPath.includes('electron.exe')) {

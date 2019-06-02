@@ -14,13 +14,12 @@ function createWindow () {
     ...{
       width: 800,
       height: 600,
-      // x: 4,
-      // y: 9,
       webPreferences: {
         nodeIntegration: true
       }
     },
-    ...config.mainWindow
+    ...config.mainWindow,
+    ...(config.env === 'development' ? config.mainWindow_dev: {})
   })
 
   // and load the index.html of the app.

@@ -15,10 +15,26 @@
 
     <div id="app" class="container-fluid">
       <div class="pt-2">
-        <span class="btn btn-light btn-sm ml-2" @click="choosePath">选择下载路径</span>
+        <span class="btn btn-light btn-sm mr-2" onclick="window.location.reload(true)">刷新</span>
+        <span class="btn btn-light btn-sm mr-2" @click="chooseSaveFilePath">选择下载路径</span>
         <span class="btn btn-light btn-sm" @click="uploadFile">上传文件</span>
       </div>
       <div class="alert alert-dark mt-2">{{downloadPath}}</div>
+      <div class="select-box">
+        <span class="btn btn-info btn-sm" @click="pickAll(true)">全选</span>
+        <span class="btn btn-light btn-sm" @click="pickAll(false)">全不选</span>
+        <span class="btn btn-primary btn-sm" @click="startDownload()">开始下载</span>
+        <div class="pt-2">
+          <span
+            v-for="item, idx of downloadArr"
+            class="btn btn-sm mr-2 mb-2 summary"
+            :class="item.pick ? 'alert-info' : 'alert-secondary'"
+            @click="pickItem(item, idx)">
+            <span class="badge badge-pill badge-danger">{{idx}}</span>
+            {{item.OrderNumber}}
+          </span>
+        </div>
+      </div>
 
       <div class="fixed-bottom alert alert-info rounded-0 d-flex">
         <div class="flex-fill">

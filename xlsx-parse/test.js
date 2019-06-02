@@ -58,7 +58,9 @@ Object.keys(sheetJsonData)
 
 // console.log(expectedKeys)
 
-const expectedArr = []
+const expectedArr = [
+  // {OrderNumber: "#2812", SKU: "CJJJJTCF00488-Heart-Blue box*1;@1", Attachment: "https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"}
+]
 const keyStartStr = Object.keys(expectedKeys).map(key => expectedKeys[key]) // [ 'B', 'C', 'S' ]
 let itemJson = {}
 Object.keys(sheetJsonData)

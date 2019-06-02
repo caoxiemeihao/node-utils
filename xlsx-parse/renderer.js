@@ -6,6 +6,7 @@ const { ipcRenderer, remote } = require('electron')
 const XLSX = require('./xlsx-parse')
 const utils = require('./utils')
 const path = require('path')
+const fs = require('fs')
 const { getVersion, updateApp } = require('./version')
 
 const vm = new Vue({
@@ -15,33 +16,11 @@ const vm = new Vue({
     logInfo: '',
     local_version: '0.0.0',
     remote_version: '0.0.0',
+    downloadArr: [],
+    startedDownload: false,
   },
   methods: {
-    uploadFile() {
-      utils.readLocalFile().then(res => {
-        console.log(res[0])
-        XLSX.parse(res[0].path, ({ cmd, data }) => {
-          console.log(vm.logInfo = `🍡 读取完成，开始下载...`, cmd, data)
-          if (cmd === 'read-xlsx') {
-            let arr = data.map(json => {
-              let urls = null
-
-              try {
-                urls = JSON.parse(json.urls)
-              } catch (e) { console.warn(e) }
-
-              return {
-                name: json.name.replace('#', ''),
-                urls: urls ? urls[0].thirdPardMessage[0].value : null // 图片链接
-              }
-            }).filter(json => json.urls) // {name: "#2780", URL: "https://uploadery.s3.amazonaws.com/meta-charms/9e475a10-FB_IMG_1558777592261.jpg"}
-
-            vm.downloadIMG(arr)
-          }
-        })
-      })
-    },
-    choosePath() {
+    chooseSaveFilePath() {
       remote.dialog.showOpenDialog({
         //默认路径
         defaultPath: path.join(vm.homedir, 'Desktop'), // 桌面
@@ -56,12 +35,59 @@ const vm = new Vue({
       },
         res => { // ["C:\Users\30848\Desktop"]
         //回调函数内容，此处是将路径内容显示在input框内
-        window.localStorage.setItem('download-path', vm.downloadPath = res[0])
+        if (Array.isArray(res)) {
+          window.localStorage.setItem('download-path', vm.downloadPath = res[0])
+        }
+      })
+    },
+    pickAll(bool) {
+      vm.downloadArr = vm.downloadArr.map(item => {
+        item.pick = bool
+
+        return item
+      })
+    },
+    pickItem(item, idx) {
+      vm.downloadArr = vm.downloadArr.map(_item => {
+        if (_item === item) {
+          _item.pick = !_item.pick
+        }
+
+        return _item
+      })
+    },
+    startDownload() {
+      if (!vm.downloadArr.length) return
+
+      if (vm.startedDownload === true) {
+        window.alert('图片下载还没有全部完成亲 ^_^\n需要重新下载，点击 刷新 按钮')
+      } else {
+        vm.startedDownload = true
+        vm.downloadIMG(vm.downloadArr.filter(item => item.pick))
+      }
+    },
+
+
+    /** 核心逻辑 s */
+    uploadFile() {
+      utils.readLocalFile().then(res => {
+        console.log('获取文件 ->', res[0])
+        XLSX.parse(res[0].path, ({ cmd, data }) => {
+          console.log(cmd, vm.logInfo = `🍡 读取完成，等待下载...`, data)
+          // data = [{OrderNumber: "#2812", SKU: "CJJJJTCF00488-Heart-Blue box*1;@1", Attachment: "https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"}]
+          vm.downloadArr = data.map(item => {
+            item.pick = true
+
+            return item
+          })
+          // if (cmd === 'read-xlsx') vm.downloadIMG(data)
+        })
       })
     },
     downloadIMG(arr = []) {
+      if (!arr.length) return
       if (!this.downloadPath) {
-        this.choosePath()
+        this.chooseSaveFilePath()
         return
       }
 
@@ -69,24 +95,43 @@ const vm = new Vue({
 
       download(arr[now])
       function download(json) {
-        let filename = `${vm.downloadPath}\\${json.name}${json.urls.substring(json.urls.lastIndexOf('.'))}`
+        let arr1
+          , dirName
+          , sum
+          , targetFolder
+          , filename
 
-        XLSX.downloadIMG({ url: json.urls, filename, cb: ev => {
-          if (ev.cmd === 'img-data') {
-            vm.logInfo = `🚀️ [${now + 1}/${arr.length}] 下载中...`
-          } else if (ev.cmd === 'img-end') {
-            now++
+        try {
+          arr1 = json.SKU.split(';') // SKU: "CJJJJTCF00488-Heart-Blue box*1;@1"
+          dirName = arr1[0].split('-')[1]
+          sum = arr1[arr1.length - 1].match(/@\d$/g)[0][1]
 
-            vm.logInfo = `🚀️ [${now + 1}/${arr.length}] 下载中...`
-            // console.log(vm.logInfo)
-            if (arr[now]) {
-              download(arr[now])
-            } else {
-              // alert('下载完了')
-              vm.logInfo = `🍺 [${now + 1}/${arr.length}] 下载完成！`
+          // console.log(arr1, dirName, sum)
+
+          targetFolder = `${vm.downloadPath}\\${dirName}\\${sum}`
+          utils.exist_dir_file(targetFolder) || fs.mkdirSync(targetFolder, { recursive: true })
+          filename = `${targetFolder}\\${json.OrderNumber}${json.Attachment.substring(json.Attachment.lastIndexOf('.'))}`
+
+          // console.log(filename)
+
+          XLSX.downloadIMG({ url: json.Attachment, filename, cb: ev => {
+            if (ev.cmd === 'img-data') {
+              vm.logInfo = `🚀️ [${now}/${arr.length}] ${json.OrderNumber} 下载中...`
+            } else if (ev.cmd === 'img-end') {
+              now++
+
+              vm.logInfo = `🚀️ [${now}/${arr.length}] ${json.OrderNumber} 下载中...`
+              // console.log(vm.logInfo)
+              if (arr[now]) {
+                download(arr[now])
+              } else {
+                // alert('下载完了')
+                vm.logInfo = `🍺 [${now}/${arr.length}] 下载完成！`
+                vm.startedDownload = false
+              }
             }
-          }
-        } })
+          } })
+        } catch (e) { errorAlert(e) }
       }
     },
     setDefaultPath() {
@@ -107,15 +152,17 @@ const vm = new Vue({
       updateApp({
         cb: ({ cmd, now, files, _files }) => {
           if (cmd === 'data') {
-            console.log(vm.logInfo = `🚀️ [${now + 1}/${files.length}] 下载中... ${files[now]}`)
+            console.log(vm.logInfo = `🚀️ [${now}/${files.length}] 下载中... ${files[now]}`)
           } else if (cmd === 'download-end') {
-            console.log(vm.logInfo = '🍺 文件下载完成\n', now + 1, files, _files.length)
+            console.log(vm.logInfo = '🍺 文件下载完成\n', now, files, _files.length)
           } else if (cmd === 'update-end') {
             console.log(vm.logInfo = '🎉 🎉 🎉 🎉 升级完成，请重新打开软件 🎉 🎉 🎉 🎉')
           }
         }
       })
     }
+    /** 核心逻辑 e */
+
   },
   mounted() {
     this.setDefaultPath()
@@ -123,27 +170,7 @@ const vm = new Vue({
   }
 }).$mount('#app')
 
-/**
- * 图片 urls
-[
-    {
-        "thirdPardMessage":[
-            {
-                "name":"_uploadery_1",
-                "value":"https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"
-            }
-        ],
-        "type":1,
-        "customMessgae":{
-            "podType":1,
-            "zone":{
-                "front":{
-                    "showimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/5392159987651.jpg",
-                    "editimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/2329113007948.png",
-                    "podtype":"picandtext"
-                }
-            }
-        }
-    }
-]
-*/
+function errorAlert(e) {
+  console.warn(e)
+  alert(`程序有报错哦亲 ^_^\n偷偷告诉你个小秘密 [308487730] 介个是作者的QQ号\n\n${e}`)
+}

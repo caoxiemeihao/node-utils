@@ -68,9 +68,10 @@ function readLocalFile(param = {}) {
   })
 }
 
-function exist_dir_file(dirPath) {
+function exist_dir_file(fullPath) {
   try {
-    fs.accessSync(path.join(__dirname, dirPath), fs.F_OK)
+    // fs.accessSync(path.join(__dirname, dirPath), fs.F_OK)
+    fs.accessSync(fullPath, fs.F_OK)
     return true
   } catch (e) {
     console.log('No such file or directory ->', e.path)
