@@ -46,7 +46,7 @@
           <span class="ml-2">最新 {{remote_version}}</span>
           <span
             class="ml-2 btn btn-sm"
-            :class="remote_version > local_version ? 'btn-success' : 'btn-light'"
+            :class="remote_version !== local_version ? 'btn-success' : 'btn-light'"
             @click="upgradeApp"
           >升级</span>
         </div>
