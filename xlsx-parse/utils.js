@@ -79,8 +79,14 @@ function exist_dir_file(fullPath) {
   }
 }
 
+function errorAlert(e) {
+  console.warn(e)
+  alert(`程序有报错哦亲 ^_^\n偷偷告诉你个小秘密 [308487730] 介个是作者的QQ号\n\n${e}`)
+}
+
 module.exports = {
   getGithubData,
   readLocalFile,
   exist_dir_file,
+  errorAlert,
 }

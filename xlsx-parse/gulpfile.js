@@ -7,7 +7,7 @@ gulp.task('serve', () => {
   electron.start()
 
   // Restarr browser process
-  gulp.watch(['main.js', 'renderer.js'], electron.restart)
+  gulp.watch(['main.js', 'renderer.js', 'xlsx-parse.js'], electron.restart)
 
   // Reload renderer process
   gulp.watch(['index.html'], electron.reload)

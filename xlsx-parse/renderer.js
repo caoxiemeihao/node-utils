@@ -95,6 +95,13 @@ const vm = new Vue({
 
       download(arr[now])
       function download(json) {
+        if (!json.Attachment) {
+          now++
+          arr[now] && download(arr[now])
+
+          return
+        }
+
         let arr1
           , dirName
           , sum
@@ -131,7 +138,7 @@ const vm = new Vue({
               }
             }
           } })
-        } catch (e) { errorAlert(e) }
+        } catch (e) { utils.errorAlert(e) }
       }
     },
     setDefaultPath() {
@@ -169,8 +176,3 @@ const vm = new Vue({
     this.getVersion()
   }
 }).$mount('#app')
-
-function errorAlert(e) {
-  console.warn(e)
-  alert(`程序有报错哦亲 ^_^\n偷偷告诉你个小秘密 [308487730] 介个是作者的QQ号\n\n${e}`)
-}

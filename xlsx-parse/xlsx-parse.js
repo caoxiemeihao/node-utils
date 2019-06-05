@@ -2,42 +2,44 @@ const fs= require('fs')
 const path = require('path')
 const XLSX = require('xlsx')
 const request = require('request')
+const utils = require('./utils')
 
 
 function parse(path, cb) {
-  /**
-  * SheetNames 代表一个excel中有几张表
-  * Sheets JSON格式数据集合，key为行、列拼装，value为单元格数据
-  * Strings 数组格式数据集合
-  **/
+  try {
+    /**
+    * SheetNames 代表一个excel中有几张表
+    * Sheets JSON格式数据集合，key为行、列拼装，value为单元格数据
+    * Strings 数组格式数据集合
+    **/
 
-  const workbook = XLSX.readFile(path)
-  const firstSheetName = workbook.SheetNames[0]
-  const sheetJsonData = workbook.Sheets[firstSheetName]
+    const workbook = XLSX.readFile(path)
+    const firstSheetName = workbook.SheetNames[0]
+    const sheetJsonData = workbook.Sheets[firstSheetName]
 
-  // console.log(sheetJsonData)
+    // console.log(sheetJsonData)
 
-  const expectedKeys = {} // { OrderNumber: 'B', SKU: 'C', Attachment: 'S' }
+    const expectedKeys = {} // { OrderNumber: 'B', SKU: 'C', Attachment: 'S' }
 
-  Object.keys(sheetJsonData)
+    Object.keys(sheetJsonData)
     .forEach(item => {
       if ('OrderNumber' === sheetJsonData[item].v)
-        expectedKeys.OrderNumber = item.substr(0, 1)
+      expectedKeys.OrderNumber = item.substr(0, 1)
       if ('SKU' === sheetJsonData[item].v)
-        expectedKeys.SKU = item.substr(0, 1)
+      expectedKeys.SKU = item.substr(0, 1)
       if ('Attachment' === sheetJsonData[item].v)
-        expectedKeys.Attachment = item.substr(0, 1)
+      expectedKeys.Attachment = item.substr(0, 1)
     })
 
-  // console.log(expectedKeys)
+    // console.log(expectedKeys)
 
-  const expectedArr = [
-    // {OrderNumber: "#2812", SKU: "CJJJJTCF00488-Heart-Blue box*1;@1", Attachment: "https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"}
-  ]
-  const keyStartStr = Object.keys(expectedKeys).map(key => expectedKeys[key]) // [ 'B', 'C', 'S' ]
-  let itemJson = {}
+    const expectedArr = [
+      // {OrderNumber: "#2812", SKU: "CJJJJTCF00488-Heart-Blue box*1;@1", Attachment: "https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"}
+    ]
+    const keyStartStr = Object.keys(expectedKeys).map(key => expectedKeys[key]) // [ 'B', 'C', 'S' ]
+    let itemJson = {}
 
-  Object.keys(sheetJsonData)
+    Object.keys(sheetJsonData)
     .forEach(item => {
       if (
         keyStartStr.includes(item.substr(0, 1)) &&
@@ -47,9 +49,16 @@ function parse(path, cb) {
           itemJson.OrderNumber = sheetJsonData[item].v
         if (item.startsWith(expectedKeys.SKU))
           itemJson.SKU = sheetJsonData[item].v
-        if (item.startsWith(expectedKeys.Attachment))
-          // 元数据 -> [{"thirdPardMessage":[{"name":"_uploadery_1","value":"https://uploadery.s3.amazonaws.com/meta-charms/f6de9657-aa6f2151ed151e9037f575519a6ad368.jpg"}],"type":1,"customMessgae":{"podType":1,"zone":{"front":{"showimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/5392159987651.jpg","editimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/2329113007948.png","podtype":"picandtext"}}}}]
-          itemJson.Attachment = JSON.parse(sheetJsonData[item].v)[0].thirdPardMessage[0].value
+        if (item.startsWith(expectedKeys.Attachment)) {
+          try {
+            // 元数据 -> [{"thirdPardMessage":[{"name":"_uploadery_1","value":"https://uploadery.s3.amazonaws.com/meta-charms/f6de9657-aa6f2151ed151e9037f575519a6ad368.jpg"}],"type":1,"customMessgae":{"podType":1,"zone":{"front":{"showimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/5392159987651.jpg","editimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/2329113007948.png","podtype":"picandtext"}}}}]
+            itemJson.Attachment = JSON.parse(sheetJsonData[item].v)[0].thirdPardMessage[0].value
+          } catch (e) {
+            itemJson.Attachment = null
+            console.warn(item, sheetJsonData[item])
+            utils.errorAlert(`第${item}行下载链接解析失败，不会影响其他的图片下载，点击确定继续`)
+          }
+        }
 
         if (Object.keys(itemJson).length === keyStartStr.length) {
           // item 装满了，存一条数据
@@ -59,9 +68,12 @@ function parse(path, cb) {
       }
     })
 
-  // console.log(expectedArr)
+    // console.log(expectedArr)
 
-  cb instanceof Function && cb({ cmd: 'read-xlsx', data: expectedArr })
+    cb instanceof Function && cb({ cmd: 'read-xlsx', data: expectedArr })
+  } catch (e) {
+    throw e
+  }
 }
 
 function downloadIMG({ url, filename, cb }) {
