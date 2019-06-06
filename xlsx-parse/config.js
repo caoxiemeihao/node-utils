@@ -6,8 +6,8 @@ exports.config = {
   mainWindow_dev: {
     x: 4,
     y: 9,
-    width: 1000,
-    height: 800,
+    width: 900,
+    height: 900,
   },
   env: (() => {
     if (process.execPath.includes('electron.exe')) {
@@ -21,4 +21,5 @@ exports.config = {
       return 'production'
     }
   })(),
+  downloadLength: 14, // 默认并行下载14张
 }

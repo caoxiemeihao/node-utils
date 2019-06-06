@@ -40,7 +40,7 @@ function parse(path, cb) {
     let itemJson = {}
 
     Object.keys(sheetJsonData)
-    .forEach(item => {
+    .forEach((item, idx) => {
       if (
         keyStartStr.includes(item.substr(0, 1)) &&
         !Object.keys(expectedKeys).includes(sheetJsonData[item].v) // 去掉第一行标题
@@ -81,8 +81,14 @@ function downloadIMG({ url, filename, cb }) {
     request
     .get(url)
     .on('response', res => {
-      // console.log(res.statusCode)
-      console.log(res.statusCode, res.headers['content-type'])
+      // console.log(res.statusCode, res.headers['content-type'])
+      utils.log.green(res.statusCode, url)
+      if (+res.statusCode !== 200) {
+        cb instanceof Function && cb({ cmd: 'img-error', data: {
+          statusCode: res.statusCode,
+          url
+        }})
+      }
     })
     .on('data', buffer => {
       // console.log(buffer)
@@ -91,6 +97,9 @@ function downloadIMG({ url, filename, cb }) {
     .on('end', _ => {
       // console.log(ev, 'end')
       cb instanceof Function && cb({ cmd: 'img-end', data: '' })
+    })
+    .on('error', e => {
+      utils.log.error(e)
     })
     .pipe(fs.createWriteStream(filename))
   } catch (e) { throw e }

@@ -84,9 +84,17 @@ function errorAlert(e) {
   alert(`程序有报错哦亲 ^_^\n偷偷告诉你个小秘密 [308487730] 介个是作者的QQ号\n\n${e}`)
 }
 
+const log = {
+  green: (str, second = '') => console.log(`%c ${str} `, 'background:#41b883; color:#fff', second),
+  blue: (str, second = '') => console.log(`%c ${str} `, 'background:#2db7f5; color:#fff', second),
+  black: (str, second = '') => console.log(`%c ${str} `, 'background:#666; color:#fff', second),
+  error: (str, second = '') => console.log(`%c ${str} `, 'background:#fa6470; color:#fff', second),
+}
+
 module.exports = {
   getGithubData,
   readLocalFile,
   exist_dir_file,
   errorAlert,
+  log,
 }

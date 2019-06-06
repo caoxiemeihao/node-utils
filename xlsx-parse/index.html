@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="./front/bootstrap.css">
     <style>
       body { padding-bottom: 90px; }
+      .download-box { position: fixed; top: 0; bottom: 60px; right: 0; width: 140px; overflow: auto; background: #fff; box-shadow: 0 0 1px #ccc; transform: translateX(100%); transition: 400ms; }
+      .download-box.actived { transform: translateX(0); }
     </style>
   </head>
   <body>
@@ -19,6 +21,10 @@
         <span class="btn btn-light btn-sm mr-2" onclick="window.location.reload(true)">刷新</span>
         <span class="btn btn-light btn-sm mr-2" @click="chooseSaveFilePath">选择下载路径</span>
         <span class="btn btn-light btn-sm" @click="uploadFile">上传文件</span>
+        <span
+          class="btn btn-sm"
+          :class="showDownloadPanel ? 'btn-danger' : 'btn-light'"
+          @click="toggleDownloadPanel">{{showDownloadPanel ? '关闭' : '下载面板'}}</span>
       </div>
       <div class="alert alert-dark mt-2">{{downloadPath}}</div>
       <div class="select-box">
@@ -34,6 +40,16 @@
             <span class="badge badge-pill badge-danger">{{idx}}</span>
             {{item.OrderNumber}}
           </span>
+        </div>
+      </div>
+
+      <div :class="['download-box', showDownloadPanel ? 'actived' : '']">
+        <div
+          v-for="item in downloadActArr"
+          class="alert download-item rounded-0 "
+          :class="item.error ? 'alert-danger' : 'alert-warning'"
+        >
+          <span>{{item.OrderNumber}}</span>
         </div>
       </div>
 

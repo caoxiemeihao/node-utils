@@ -102,11 +102,9 @@ const vm = new Vue({
 
       let now = 0
 
-      vm.showDownloadPanel = true
-      for (let x = 0; x < config.downloadLength; x++) {
-        download(arr[now = x])
-      }
+      download(arr[now])
       function download(json) {
+        console.log(now, JSON.stringify(json))
         if (!json.Attachment) {
           now++
           utils.log.error(`第 ${now} 行数据有问题`)
@@ -134,16 +132,11 @@ const vm = new Vue({
 
           // console.log(filename)
 
-          vm.downloadActArr.push(json)
           XLSX.downloadIMG({ url: json.Attachment, filename, cb: ev => {
             if (ev.cmd === 'img-error') {
               now++
               utils.log.error(`第 ${now} 行图片请求失败 \n`, ev.data)
               arr[now] && download(arr[now])
-              vm.downloadActArr = vm.downloadActArr.map(item => {
-                if (item.OrderNumber === json.OrderNumber) item.error = true
-                return item
-              })
             } else if (ev.cmd === 'img-data') {
               vm.logInfo = `🚀️ [${now}/${arr.length}] ${json.OrderNumber} 下载中...`
             } else if (ev.cmd === 'img-end') {
@@ -151,17 +144,15 @@ const vm = new Vue({
 
               vm.logInfo = `🚀️ [${now}/${arr.length}] ${json.OrderNumber} 下载中...`
               // console.log(vm.logInfo)
-              // 下载完成，从下载队列中去除
-              vm.downloadActArr = vm.downloadActArr.filter(item => item.OrderNumber !== json.OrderNumber)
               if (arr[now]) {
                 download(arr[now])
               } else {
                 // alert('下载完了')
-                vm.logInfo = `🍺 [${Math.min(arr.length, now)}/${arr.length}] 下载完成！`
+                vm.logInfo = `🍺 [${now}/${arr.length}] 下载完成！`
                 vm.startedDownload = false
               }
             }
-          }})
+          } })
         } catch (e) {
           utils.errorAlert(`${e}\n 一般不会影响其他的图片下载，点击确定继续`)
           now++
