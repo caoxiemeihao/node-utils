@@ -145,20 +145,22 @@ const vm = new Vue({
                 return item
               })
             } else if (ev.cmd === 'img-data') {
-              vm.logInfo = `🚀️ [${now}/${arr.length}] ${json.OrderNumber} 下载中...`
+              vm.logInfo = `🚀️ [${Math.min(arr.length, now)}/${arr.length}] ${json.OrderNumber} 下载中...`
             } else if (ev.cmd === 'img-end') {
               now++
 
-              vm.logInfo = `🚀️ [${now}/${arr.length}] ${json.OrderNumber} 下载中...`
+              vm.logInfo = `🚀️ [${Math.min(arr.length, now)}/${arr.length}] ${json.OrderNumber} 下载中...`
               // console.log(vm.logInfo)
               // 下载完成，从下载队列中去除
               vm.downloadActArr = vm.downloadActArr.filter(item => item.OrderNumber !== json.OrderNumber)
               if (arr[now]) {
                 download(arr[now])
               } else {
-                // alert('下载完了')
-                vm.logInfo = `🍺 [${Math.min(arr.length, now)}/${arr.length}] 下载完成！`
-                vm.startedDownload = false
+                if (vm.downloadActArr.length === 0) {
+                  // alert('下载完了')
+                  vm.logInfo = `🍺 [${Math.min(arr.length, now)}/${arr.length}] 下载完成！`
+                  vm.startedDownload = false
+                }
               }
             }
           }})
