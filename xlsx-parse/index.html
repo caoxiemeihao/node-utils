@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="./front/bootstrap.css">
     <style>
       body { padding-bottom: 90px; }
-      .download-box { position: fixed; top: 0; bottom: 60px; right: 0; width: 140px; overflow: auto; background: #fff; box-shadow: 0 0 1px #ccc; transform: translateX(100%); transition: 400ms; }
+      .download-box { position: fixed; top: 0; bottom: 60px; right: 0; width: 190px; overflow: auto; background: #fff; box-shadow: 0 0 1px #ccc; transform: translateX(100%); transition: 400ms; }
       .download-box.actived { transform: translateX(0); }
     </style>
   </head>
@@ -37,7 +37,10 @@
             class="btn btn-sm mr-2 mb-2 summary"
             :class="item.pick ? 'alert-info' : 'alert-secondary'"
             @click="pickItem(item, idx)">
-            <span class="badge badge-pill badge-danger">{{idx}}</span>
+            <span
+              class="badge badge-pill"
+              :class="item.group ? 'badge-dark' : 'badge-danger'">
+              {{idx + 1}}</span>
             {{item.OrderNumber}}
           </span>
         </div>
@@ -49,7 +52,8 @@
           class="alert download-item rounded-0 "
           :class="item.error ? 'alert-danger' : 'alert-warning'"
         >
-          <span>{{item.OrderNumber}}</span>
+          <span class="badge badge-light badge-pill">{{item.idx + 1}}</span>
+          {{item.OrderNumber}}
         </div>
       </div>
 

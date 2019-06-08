@@ -22,37 +22,42 @@ function parse(path, cb) {
     const expectedKeys = {} // { OrderNumber: 'B', SKU: 'C', Attachment: 'S' }
 
     Object.keys(sheetJsonData)
-    .forEach(item => {
-      if ('OrderNumber' === sheetJsonData[item].v)
-      expectedKeys.OrderNumber = item.substr(0, 1)
-      if ('SKU' === sheetJsonData[item].v)
-      expectedKeys.SKU = item.substr(0, 1)
-      if ('Attachment' === sheetJsonData[item].v)
-      expectedKeys.Attachment = item.substr(0, 1)
-    })
+      .forEach(item => {
+        if ('OrderNumber' === sheetJsonData[item].v) {
+          expectedKeys.OrderNumber = item.substr(0, 1)
+        }
+        if ('SKU' === sheetJsonData[item].v) {
+          expectedKeys.SKU = item.substr(0, 1)
+        }
+        if ('Attachment' === sheetJsonData[item].v) {
+          expectedKeys.Attachment = item.substr(0, 1)
+        }
+      })
 
     // console.log(expectedKeys)
 
     const expectedArr = [
       // {OrderNumber: "#2812", SKU: "CJJJJTCF00488-Heart-Blue box*1;@1", Attachment: "https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"}
     ]
-    const keyStartStr = Object.keys(expectedKeys).map(key => expectedKeys[key]) // [ 'B', 'C', 'S' ]
+    const startStrKeys = Object.keys(expectedKeys).map(key => expectedKeys[key]) // [ 'B', 'C', 'S' ]
     let itemJson = {}
 
     Object.keys(sheetJsonData)
     .forEach((item, idx) => {
       if (
-        keyStartStr.includes(item.substr(0, 1)) &&
+        startStrKeys.includes(item.substr(0, 1)) &&
         !Object.keys(expectedKeys).includes(sheetJsonData[item].v) // 去掉第一行标题
       ) {
-        if (item.startsWith(expectedKeys.OrderNumber))
+        if (item.startsWith(expectedKeys.OrderNumber)) {
           itemJson.OrderNumber = sheetJsonData[item].v
-        if (item.startsWith(expectedKeys.SKU))
+        }
+        if (item.startsWith(expectedKeys.SKU)) {
           itemJson.SKU = sheetJsonData[item].v
+        }
         if (item.startsWith(expectedKeys.Attachment)) {
           try {
             // 元数据 -> [{"thirdPardMessage":[{"name":"_uploadery_1","value":"https://uploadery.s3.amazonaws.com/meta-charms/f6de9657-aa6f2151ed151e9037f575519a6ad368.jpg"}],"type":1,"customMessgae":{"podType":1,"zone":{"front":{"showimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/5392159987651.jpg","editimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/2329113007948.png","podtype":"picandtext"}}}}]
-            itemJson.Attachment = JSON.parse(sheetJsonData[item].v)[0].thirdPardMessage[0].value
+            itemJson.Attachment = JSON.parse(sheetJsonData[item].v).map(item => item.thirdPardMessage[0].value)
           } catch (e) {
             itemJson.Attachment = null
             console.warn(item, sheetJsonData[item])
@@ -60,7 +65,7 @@ function parse(path, cb) {
           }
         }
 
-        if (Object.keys(itemJson).length === keyStartStr.length) {
+        if (Object.keys(itemJson).length === startStrKeys.length) {
           // item 装满了，存一条数据
           expectedArr.push(itemJson)
           itemJson = {}
@@ -70,7 +75,36 @@ function parse(path, cb) {
 
     // console.log(expectedArr)
 
-    cb instanceof Function && cb({ cmd: 'read-xlsx', data: expectedArr })
+    // ---- 19-06-08 mod 支持多 SKU --S--
+    let processedArr = []
+
+    expectedArr.forEach(row => {
+      try {
+        if (row.Attachment) { // 跳过脏数据
+          let tmpArr = []
+          let skuArr = row.SKU.split(';')
+
+          if (row.Attachment.length === 1) { // 单个 SKU
+            tmpArr = [{ ...row, SKU: row.SKU.split(';')[0], Attachment: row.Attachment[0] }]
+          } else {                           // 多个 SKU
+            tmpArr = row.Attachment.map((imgUrl, idx) => ({
+              OrderNumber: `${row.OrderNumber}-${idx + 1}`,
+              SKU: skuArr[idx],
+              Attachment: imgUrl,
+              group: row.OrderNumber,
+            }))
+          }
+
+          processedArr = [ ...processedArr, ...tmpArr ]
+        }
+      } catch (e) {
+        console.warn(e)
+        utils.errorAlert(`${JSON.stringify(row)}\nSKU加工失败，不会影响其他的图片下载，点击确定继续`)
+      }
+    })
+    // ---- 19-06-08 mod 支持多 SKU --E--
+
+    cb instanceof Function && cb({ cmd: 'read-xlsx', data: processedArr })
   } catch (e) {
     throw e
   }

@@ -86,14 +86,10 @@ const vm = new Vue({
       utils.readLocalFile().then(res => {
         console.log('获取文件 ->', res[0])
         XLSX.parse(res[0].path, ({ cmd, data }) => {
-          console.log(cmd, vm.logInfo = `🍡 读取完成，等待下载...`, data)
+          console.log(cmd, vm.logInfo = `🍡 读取完成，等待下载...`, JSON.parse(JSON.stringify(data)))
           // data = [{OrderNumber: "#2812", SKU: "CJJJJTCF00488-Heart-Blue box*1;@1", Attachment: "https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"}]
-          vm.downloadArr = data.map(item => {
-            item.pick = true
-
-            return item
-          })
-          // if (cmd === 'read-xlsx') vm.downloadIMG(data)
+          vm.downloadArr = data.map((item, idx) => ({ ...item, pick: true, idx }))
+          // if (cmd === 'read-xlsx') vm.downloadIMG(data) // 读完自动下载
         })
       })
     },
@@ -122,9 +118,10 @@ const vm = new Vue({
           , filename
 
         try {
-          arr1 = json.SKU.split(';') // SKU: "CJJJJTCF00488-Heart-Blue box*1;@1"
+          arr1 = json.SKU.split(' ') // SKU: "CJJJJTCF00488-Heart-Blue box*1;@1"
+
           dirName = arr1[0].split('-')[1]
-          sum = arr1[arr1.length - 1].match(/@\d$/g)[0][1]
+          sum = arr1[1].split('*')[1]
 
           // console.log(arr1, dirName, sum)
 

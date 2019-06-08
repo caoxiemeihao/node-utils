@@ -1,6 +1,6 @@
 {
   "name": "xlsx-parse",
-  "version": "19.06.06",
+  "version": "19.06.08",
   "description": "专为Ning ning er开发的Excel解析、下载",
   "main": "main.js",
   "scripts": {
