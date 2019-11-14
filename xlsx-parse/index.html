@@ -8,6 +8,7 @@
       body { padding-bottom: 90px; }
       .download-box { position: fixed; top: 0; bottom: 60px; right: 0; width: 190px; overflow: auto; background: #fff; box-shadow: 0 0 1px #ccc; transform: translateX(100%); transition: 400ms; }
       .download-box.actived { transform: translateX(0); }
+      .btn-download { min-width: 74px; }
     </style>
   </head>
   <body>
@@ -17,20 +18,23 @@
     and Electron <script>document.write(process.versions.electron)</script>. -->
 
     <div id="app" class="container-fluid">
-      <div class="pt-2">
-        <span class="btn btn-light btn-sm mr-2" onclick="window.location.reload(true)">刷新</span>
-        <span class="btn btn-light btn-sm mr-2" @click="chooseSaveFilePath">选择下载路径</span>
-        <span class="btn btn-light btn-sm" @click="uploadFile">上传文件</span>
-        <span
-          class="btn btn-sm"
-          :class="showDownloadPanel ? 'btn-danger' : 'btn-light'"
-          @click="toggleDownloadPanel">{{showDownloadPanel ? '关闭' : '下载面板'}}</span>
+      <div class="pt-2 btn-group">
+        <span class="btn btn-light btn-sm btn-dev-tools" @click="toggleDevTools">DevTools</span>
+        <span class="btn btn-light btn-sm" onclick="window.location.reload(true)">刷新</span>
+        <span class="btn btn-light btn-sm" @click="chooseSaveFilePath">选择下载路径</span>
       </div>
-      <div class="alert alert-dark mt-2">{{downloadPath}}</div>
+      <div class="alert alert-info mt-1 mb-1 p-1 pl-2 pr-2">图片保存路径 &gt;&gt; {{downloadPath ? downloadPath : '--请选择下载路径--'}}</div>
       <div class="select-box">
-        <span class="btn btn-info btn-sm" @click="pickAll(true)">全选</span>
-        <span class="btn btn-light btn-sm" @click="pickAll(false)">全不选</span>
-        <span class="btn btn-primary btn-sm" @click="startDownload()">开始下载</span>
+        <div class="btn-group">
+          <span
+          class="btn btn-sm btn-download"
+          :class="showDownloadPanel ? 'btn-danger' : 'btn-info'"
+          @click="toggleDownloadPanel">{{showDownloadPanel ? '关闭列表' : '下载列表'}}</span>
+          <span class="btn btn-info btn-sm" @click="uploadFile">上传文件</span>
+          <span class="btn btn-success btn-sm" @click="pickAll(true)">全选</span>
+          <span class="btn btn-secondary btn-sm" @click="pickAll(false)">全不选</span>
+          <span class="btn btn-primary btn-sm" @click="startDownload()">开始下载</span>
+        </div>
         <div class="pt-2">
           <span
             v-for="item, idx of downloadArr"
@@ -57,7 +61,7 @@
         </div>
       </div>
 
-      <div class="fixed-bottom alert alert-info rounded-0 d-flex m-0">
+      <div class="fixed-bottom alert alert-info rounded-0 d-flex m-0 p-1 pr-2 pl-2">
         <div class="flex-fill">
           {{logInfo}}
         </div>

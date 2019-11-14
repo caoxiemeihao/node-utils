@@ -1,0 +1,63 @@
+Arguments: 
+  D:\app\node\node.exe D:\app\Yarn\bin\yarn.js start
+
+PATH: 
+  C:\ProgramData\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;D:\app\Git\cmd;D:\app\SVN\bin;D:\app\Java\jdk1.8.0_161\bin;D:\app\Java\jdk1.8.0_161\jre\bin;D:\android\sdk\tools;D:\android\sdk\platform-tools;D:\xampp\mysql\bin;C:\ProgramData\chocolatey\bin;D:\app\Yarn\bin\;D:\app\Python3.6.5\;D:\app\Python3.6.5\Scripts\;C:\Users\30848\.windows-build-tools\python27\;D:\app\node\node_modules\npm\node_modules\npm-lifecycle\node-gyp-bin;C:\Users\30848\AppData\Roaming\npm\node_modules\windows-build-tools\node_modules\.bin;C:\Users\30848\AppData\Roaming\npm\node_modules\.bin;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;D:\app\Git\cmd;D:\app\SVN\bin;D:\app\Java\jdk1.8.0_161\bin;D:\app\Java\jdk1.8.0_161\jre\bin;D:\android\sdk\tools;D:\android\sdk\platform-tools;D:\xampp\mysql\bin;D:\app\node\;C:\Users\30848\AppData\Local\Microsoft\WindowsApps;D:\app\flutter\bin;C:\Users\30848\AppData\Roaming\npm;D:\app\apache-maven-3.6.1\bin;D:\app\Theme Kit;D:\app\Yarn\bin;D:\app\chrome-driver;D:\app\geckodriver;C:\Users\30848\AppData\Local\Microsoft\WindowsApps;D:\app\lua53;
+
+Yarn version: 
+  1.17.3
+
+Node version: 
+  10.15.3
+
+Platform: 
+  win32 x64
+
+Trace: 
+  SyntaxError: D:\github\node-utils\xlsx-parse\package.json: Unexpected token s in JSON at position 19
+      at JSON.parse (<anonymous>)
+      at D:\app\Yarn\lib\cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (D:\app\Yarn\lib\cli.js:304:30)
+      at D:\app\Yarn\lib\cli.js:315:13
+
+npm manifest: 
+  {
+    "name": "Hello\sNing\sning\ser!",
+    "version": "19.06.08",
+    "description": "专为Ning ning er开发的Excel解析、下载",
+    "main": "main.js",
+    "scripts": {
+      "start": "npm run dev",
+      "dev": ".\\node_modules\\.bin\\gulp serve",
+      "package": "electron-packager ./ excel-utils --out ./dist --overwrite"
+    },
+    "repository": "https://github.com/caoxiemeihao/node-utils",
+    "keywords": [
+      "Electron",
+      "excel",
+      "xlsx"
+    ],
+    "README": {
+      "打包命令": "electron-packager ./ myapp --out ./OutApp --version 1.7.9 --overwrite --icon=./app/img/icon/icon.ico",
+      "electron、electron-connect、gulp": "这三个模块，属于 devDependencies，先直接放一起，省的打包完报错"
+    },
+    "author": "草鞋没号",
+    "license": "CC0-1.0",
+    "devDependencies": {
+      "electron": "^5.0.2",
+      "electron-connect": "^0.6.3",
+      "gulp": "^4.0.2"
+    },
+    "dependencies": {
+      "request": "^2.88.0",
+      "vue": "^2.6.10",
+      "xlsx": "^0.14.3"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

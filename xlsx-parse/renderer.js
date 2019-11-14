@@ -9,9 +9,10 @@ const path = require('path')
 const fs = require('fs')
 const { getVersion, updateApp } = require('./version')
 
+let downloadPath = null
 const vm = new Vue({
   data: {
-    downloadPath: window.localStorage.getItem('download-path') || '',
+    downloadPath: (downloadPath = window.localStorage.getItem('download-path') || ''),
     homedir: '',
     logInfo: '',
     local_version: '0.0.0',
@@ -41,7 +42,7 @@ const vm = new Vue({
         res => { // ["C:\Users\30848\Desktop"]
         //回调函数内容，此处是将路径内容显示在input框内
         if (Array.isArray(res)) {
-          window.localStorage.setItem('download-path', vm.downloadPath = res[0])
+          window.localStorage.setItem('download-path', (downloadPath = vm.downloadPath = res[0]))
           if (start === 'start') this.startDownload()
         }
       })
@@ -67,10 +68,13 @@ const vm = new Vue({
         this.chooseSaveFilePath('start')
         return
       }
-      if (!vm.downloadArr.length) return
+      if (!vm.downloadArr.length) {
+        window.alert('还没有上传文件哦~亲 ^_^')
+        return
+      }
 
       if (vm.startedDownload === true) {
-        window.alert('图片下载还没有全部完成亲 ^_^\n需要重新下载，点击 刷新 按钮')
+        window.alert('图片下载还没有全部完成~亲 ^_^\n需要重新下载，点击 刷新 按钮')
       } else {
         vm.startedDownload = true
         vm.downloadIMG(vm.downloadArr.filter(item => item.pick))
@@ -79,11 +83,14 @@ const vm = new Vue({
     toggleDownloadPanel() {
       this.showDownloadPanel = !this.showDownloadPanel
     },
+    toggleDevTools() {
+      ipcRenderer.send('toggle dev tools')
+    },
 
-
-    /** 核心逻辑 s */
+    /** ============== 核心逻辑 ============== s */
     uploadFile() {
       utils.readLocalFile().then(res => {
+        process.emit('file uploaded')
         console.log('获取文件 ->', res[0])
         XLSX.parse(res[0].path, ({ cmd, data }) => {
           console.log(cmd, vm.logInfo = `🍡 读取完成，等待下载...`, JSON.parse(JSON.stringify(data)))
@@ -106,6 +113,7 @@ const vm = new Vue({
         if (!json.Attachment) {
           now++
           utils.log.error(`第 ${now} 行数据有问题`)
+          utils.recordLog(`第 ${now} 行数据有问题`)
           arr[now] && download(arr[now])
 
           return
@@ -121,7 +129,9 @@ const vm = new Vue({
           arr1 = json.SKU.split(' ') // SKU: "CJJJJTCF00488-Heart-Blue box*1;@1"
 
           dirName = arr1[0].split('-')[1]
-          sum = arr1[1].split('*')[1]
+          sum = json.AttachmentType === XLSX.AttachmentType.uploadery // 19-11-14 mod
+           ? json.quantity || arr1[1].split('*')[1]
+           : json.quantity /** 其實兩者都可以用 quantity */
 
           // console.log(arr1, dirName, sum)
 
@@ -136,6 +146,7 @@ const vm = new Vue({
             if (ev.cmd === 'img-error') {
               now++
               utils.log.error(`第 ${now} 行图片请求失败 \n`, ev.data)
+              utils.recordLog(`第 ${now} 行图片请求失败 \n`, ev.data)
               arr[now] && download(arr[now])
               vm.downloadActArr = vm.downloadActArr.map(item => {
                 if (item.OrderNumber === json.OrderNumber) item.error = true
@@ -162,7 +173,7 @@ const vm = new Vue({
             }
           }})
         } catch (e) {
-          utils.errorAlert(`${e}\n 一般不会影响其他的图片下载，点击确定继续`)
+          console.error(`${e}\n 不会影响其他的图片下载`)
           now++
           arr[now] && download(arr[now])
         }
@@ -195,7 +206,7 @@ const vm = new Vue({
         }
       })
     }
-    /** 核心逻辑 e */
+    /** ============== 核心逻辑 ============== e */
 
   },
   mounted() {
@@ -203,3 +214,7 @@ const vm = new Vue({
     this.getVersion()
   }
 }).$mount('#app')
+
+module.exports = {
+  getDownloadPath: function() { return downloadPath }
+}

@@ -1,6 +1,6 @@
 {
   "name": "xlsx-parse",
-  "version": "19.06.08",
+  "version": "19.11.04-1",
   "description": "专为Ning ning er开发的Excel解析、下载",
   "main": "main.js",
   "scripts": {
@@ -29,5 +29,15 @@
     "request": "^2.88.0",
     "vue": "^2.6.10",
     "xlsx": "^0.14.3"
-  }
+  },
+  "manifest": [
+    {
+      "date": "2019-06-08",
+      "blog": "支持多SKU下载"
+    },
+    {
+      "date": "2019-11-04",
+      "blog": "excel解析加入cj定义的Attachment格式"
+    }
+  ]
 }

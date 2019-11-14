@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 const https = require('https')
 
 function getGithubData(filepath = '', success = _ => _, error = _ => _) {
@@ -81,8 +82,41 @@ function exist_dir_file(fullPath) {
 
 function errorAlert(e) {
   // console.warn(e)
-  alert(`程序有报错哦亲 ^_^\n偷偷告诉你个小秘密 [308487730] 介个是作者的QQ号\n\n${e}`)
+  alert(`程序有报错哦~亲 ^_^\n偷偷告诉你个小秘密 308487730 介个是作者的QQ号\n\n${e}`)
 }
+
+let recordErrors = []
+function recordLog(log) {
+  const fullFilename = path.join(require('./renderer').getDownloadPath(), '错误日志.txt')
+  // 记录报错日志
+  fs.appendFile(fullFilename, `\n${log}`, () => {})
+  recordErrors.push(log)
+  console.log(fullFilename)
+  console.warn(log)
+}
+
+process.on('file uploaded', () => {
+  const fullFilename = path.join(require('./renderer').getDownloadPath(), '错误日志.txt')
+  // 删掉老的日志
+  fs.unlink(fullFilename, err => {
+    if (!err) {
+      fs.appendFileSync(fullFilename,
+`----------------------------------------
+作者 QQ: 308487730
+记录时间: ${new Date().toJSON()}
+----------------------------------------`,
+        () => {})
+    }
+  })
+  recordErrors = []
+})
+
+process.on('end download', () => {
+  if (recordErrors.length) {
+    errorAlert('去看看下载目录下有个 "错误日志.txt" 呢')
+  }
+})
+
 
 const log = {
   green: (str, second = '') => console.log(`%c ${str} `, 'background:#41b883; color:#fff', second),
@@ -96,5 +130,6 @@ module.exports = {
   readLocalFile,
   exist_dir_file,
   errorAlert,
+  recordLog,
   log,
 }

@@ -74,7 +74,8 @@ function init() {
   if (config.env === 'development') {
     toggleDevTools(true)
   }
-  ipcMain.on('homedir', event =>event.sender.send('homedir', OS.homedir()))
+  ipcMain.on('homedir', event => event.sender.send('homedir', OS.homedir()))
+  ipcMain.on('toggle dev tools', event => toggleDevTools())
   // setTimeout(() => mainWindow.webContents.send('homedir', OS.homedir()), 1000)
 }
 
@@ -82,10 +83,12 @@ function init() {
 // 切换 DevTools
 function toggleDevTools(bool) {
   if (mainWindow) {
-    if (bool) {
-      mainWindow.webContents.openDevTools()
+    if (bool !== undefined) {
+      bool
+        ? mainWindow.webContents.openDevTools()
+        : mainWindow.webContents.closeDevTools()
     } else {
-      mainWindow.webContents.closeDevTools()
+      mainWindow.webContents.toggleDevTools()
     }
   }
 }
