@@ -65,11 +65,10 @@ function parse(path, cb) {
             itemJson.quantity = sheetJsonData[item].v
           }
           if (item.startsWith(expectedKeys.Attachment)) {
-            const [error, type, Attachment] = compatible_CJ_Uploadery(sheetJsonData[item].v)
+            const [error, type, Attachment] = compatible_CJ_Uploadery(sheetJsonData[item].v, item)
             if (error) {
               // utils.errorAlert(`第${item}行下载链接解析失败，不会影响其他的图片下载，点击确定继续\n${error}`)
-              console.warn(error)
-              utils.recordLog(`第${item}行下载链接解析失败`)
+              utils.recordLog(`---- 第${item}行下载链接解析失败 ----\n${error}`)
             }
             itemJson.AttachmentType = type
             itemJson.Attachment = Attachment
@@ -111,6 +110,7 @@ function parse(path, cb) {
     })
     // ---- 19-06-08 mod 支持多 SKU --E--
 
+    process.emit('read-xlsx', processedArr)
     cb instanceof Function && cb({ cmd: 'read-xlsx', data: processedArr })
   } catch (e) {
     throw e
@@ -118,19 +118,23 @@ function parse(path, cb) {
 }
 
 // ---- 19-11-14 ---- add 兼容 cj、shopify-uploadery
-function compatible_CJ_Uploadery(Attachment) {
+function compatible_CJ_Uploadery(Attachment, point) {
 
   // [error, type, Attachment]
   let result = [null, null, null]
 
   // [key:value;key:value;]
-  const isCj = /^\[(\w+:.+;)+\]$/.test(Attachment)
+  const isCj = /^\[((.|\n)+:(.|\n)+;)+\]$/.test(Attachment)
 
   try {
     if (isCj) {
       result[1] = AttachmentType.cj
       // 元数据 CJ
       // [_uploadery_1:https://uploadery.s3.amazonaws.com/meta-charms/b7e878ee-imagepng_0.png;]
+
+      // BUG: 19-11-19 元数据 CJ [有换行]
+      // [Texte personnalisé:One love, forever, Happy Birthday
+      //  je t’aime Imane.;Image:https://uploadery.s3.amazonaws.com/giordini/efa759e1-EB9F1108-93E7-45B5-BB8E-BE9B8530A607.jpeg;]
       result[2] = Attachment.substring(1, Attachment.length - 1)
         .split(';')
         .map(_ => {
@@ -145,8 +149,11 @@ function compatible_CJ_Uploadery(Attachment) {
       result[2] = JSON.parse(Attachment).map(_ => _.thirdPardMessage[0].value)
     }
   } catch (e) {
-    result[0] = e.stack
-    console.warn(Attachment, '\n', e.stack)
+    result[0] = Attachment
+    console.groupCollapsed('Attachment解析报错')
+    console.log(`Attachment [${point}]:`, Attachment)
+    console.warn(e.stack)
+    console.groupEnd()
   } finally {
     return result
   }

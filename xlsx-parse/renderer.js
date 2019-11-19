@@ -21,6 +21,7 @@ const vm = new Vue({
     downloadActArr: [],
     startedDownload: false,
     showDownloadPanel: false,
+    filename: '',
   },
   computed: {
     // downloadArrFilter() { }
@@ -92,7 +93,7 @@ const vm = new Vue({
       utils.readLocalFile().then(res => {
         process.emit('file uploaded')
         console.log('获取文件 ->', res[0])
-        XLSX.parse(res[0].path, ({ cmd, data }) => {
+        XLSX.parse(this.filename = res[0].path, ({ cmd, data }) => {
           console.log(cmd, vm.logInfo = `🍡 读取完成，等待下载...`, JSON.parse(JSON.stringify(data)))
           // data = [{OrderNumber: "#2812", SKU: "CJJJJTCF00488-Heart-Blue box*1;@1", Attachment: "https://uploadery.s3.amazonaws.com/meta-charms/e49b772a-IMG_49911.jpg"}]
           vm.downloadArr = data.map((item, idx) => ({ ...item, pick: true, idx }))

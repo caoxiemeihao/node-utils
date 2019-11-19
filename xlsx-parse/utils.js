@@ -91,8 +91,8 @@ function recordLog(log) {
   // 记录报错日志
   fs.appendFile(fullFilename, `\n${log}`, () => {})
   recordErrors.push(log)
-  console.log(fullFilename)
-  console.warn(log)
+  // console.log(fullFilename)
+  // console.warn(log)
 }
 
 process.on('file uploaded', () => {
@@ -114,6 +114,12 @@ process.on('file uploaded', () => {
 process.on('end download', () => {
   if (recordErrors.length) {
     errorAlert('去看看下载目录下有个 "错误日志.txt" 呢')
+  }
+})
+
+process.on('read-xlsx', processedArr => {
+  if (recordErrors.length) {
+    errorAlert(recordErrors.pop())
   }
 })
 

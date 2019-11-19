@@ -18,13 +18,17 @@
     and Electron <script>document.write(process.versions.electron)</script>. -->
 
     <div id="app" class="container-fluid">
-      <div class="pt-2 btn-group">
-        <span class="btn btn-light btn-sm btn-dev-tools" @click="toggleDevTools">DevTools</span>
-        <span class="btn btn-light btn-sm" onclick="window.location.reload(true)">刷新</span>
-        <span class="btn btn-light btn-sm" @click="chooseSaveFilePath">选择下载路径</span>
+      <div class="mt-2 btn-group d-flex align-items-center">
+        <div class="btn-group">
+          <span class="btn btn-light btn-sm btn-dev-tools" @click="toggleDevTools">DevTools</span>
+          <span class="btn btn-light btn-sm" onclick="window.location.reload(true)">刷新</span>
+          <!-- <span class="btn btn-light btn-sm" @click="chooseSaveFilePath">选择下载路径</span> -->
+        </div>
+        <div class="ml-2 path">
+          <span class="btn btn-light btn-sm" @click="chooseSaveFilePath">图片保存路径 &gt;&gt; {{downloadPath ? downloadPath : '--请选择下载路径--'}}</span>
+        </div>
       </div>
-      <div class="alert alert-info mt-1 mb-1 p-1 pl-2 pr-2">图片保存路径 &gt;&gt; {{downloadPath ? downloadPath : '--请选择下载路径--'}}</div>
-      <div class="select-box">
+      <div class="select-box mt-2">
         <div class="btn-group">
           <span
           class="btn btn-sm btn-download"
@@ -35,7 +39,8 @@
           <span class="btn btn-secondary btn-sm" @click="pickAll(false)">全不选</span>
           <span class="btn btn-primary btn-sm" @click="startDownload()">开始下载</span>
         </div>
-        <div class="pt-2">
+        <div class="mt-2" v-if="filename">{{filename}}</div>
+        <div class="mt-2">
           <span
             v-for="item, idx of downloadArr"
             class="btn btn-sm mr-2 mb-2 summary"
