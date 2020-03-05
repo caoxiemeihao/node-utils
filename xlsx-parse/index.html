@@ -34,7 +34,7 @@
           class="btn btn-sm btn-download"
           :class="showDownloadPanel ? 'btn-danger' : 'btn-info'"
           @click="toggleDownloadPanel">{{showDownloadPanel ? '关闭列表' : '下载列表'}}</span>
-          <span class="btn btn-info btn-sm" @click="uploadFile">上传文件</span>
+          <span class="btn btn-warning btn-sm" @click="uploadFile">选择文件</span>
           <span class="btn btn-success btn-sm" @click="pickAll(true)">全选</span>
           <span class="btn btn-secondary btn-sm" @click="pickAll(false)">全不选</span>
           <span class="btn btn-primary btn-sm" @click="startDownload()">开始下载</span>

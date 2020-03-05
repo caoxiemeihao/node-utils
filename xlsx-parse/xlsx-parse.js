@@ -138,8 +138,19 @@ function compatible_CJ_Uploadery(Attachment, point) {
       result[2] = Attachment.substring(1, Attachment.length - 1)
         .split(';')
         .map(_ => {
-          const r = _.match(/https?:\/\/.+\.(png|jpe?g)/)
-          return Array.isArray(r) ? r[0] : null
+          if (_.includes('download.html')) {
+            // 兼容 html 形式的链接 20-03-05
+            // https://cdn.shopify.com/s/files/1/0033/4807/0511/files/download.html?id=610f9743-fad7-420f-bfa9-b483643e628d&uu=9ee77182-2429-4314-ad13-7d5919c07a09&mo=&fi=T0ZGSUNJQUwgMS5wbmc=&image=true
+            const r = _.match(/(?<=(&uu=)).*(?=(&mo=))/)
+            return Array.isArray(r)
+              // 根据分析页面拼装出来的链接，貌似可用。愿万事大吉 ^_^
+              ? `https://cdn.getuploadkit.com/${r[0]}/-/preview/900x900/OFFICIAL%201.png`
+              : null
+          } else {
+            // 图片链接
+            const r = _.match(/https?:\/\/.+\.(png|jpe?g)/)
+            return Array.isArray(r) ? r[0] : null
+          }
         })
         .filter(_ => _)
     } else {
