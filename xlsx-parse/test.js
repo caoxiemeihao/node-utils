@@ -1,6 +1,8 @@
 const fs = require('fs')
 const path = require('path')
 const XLSX = require('xlsx')
+const https = require('https')
+const http = require('http')
 
 const { getGithubData, exist_dir_file } = require('./utils')
 const { getVersion, updateApp } = require('./version')
@@ -93,3 +95,52 @@ fs.writeFileSync(path.join(__dirname, './xlsx/提取后的数据.json'), JSON.st
 // 19-06-02 检测文件夹、文件是否存在
 // console.log(exist_dir_file('./xlsx/download.png'))
 
+
+/* 20-03-22
+const writeable = fs.createWriteStream(path.join(__dirname, 'test.jpeg'))
+const url = 'https://uc261ef195a13f1577c70178591c.previews.dropboxusercontent.com/p/thumb/AAtMa54tEzNtKVFEmO4WcI1yi-HKeOxKPWU1e1sq1cGm4m4l-vckhMFc8M0wYHElNG15KhtERhL86OPE--fzkF9Ht8MxsistZwaKB7DPCUeFJevf45IyZp6qWBDnplkEL0dUvirJ4ye1PKRglcVFBVrFtqEWic3YZXMHLdXZ126rpJ9izcHWaqgdTs7c92vVhYUN27en3xK-TT_TBLhZ24LDqYDlKdgFLYcbUdJeeuFjYcd4YdqlumoI5ySj8Pnaa6kQ8lKLsFVo1c7OzaWYhd8Czd2c_XiIPOPhGZp5evz8qwPLHKFKkOZqziUmdeGamWmJC21_tviyJATnsBV7WzkTJh7knTuTAiiE76BNTKbTGtJ1b7oIEoxFdSooYbooualnyGCGgHB8bG8TprFELO1t/p.jpeg?size=1024x768'
+https.request(url, res => {
+  res.on('data', chunk => {
+    console.log(chunk)
+    writeable.write(chunk)
+  })
+  res.on('end', () => {
+    console.log('----', 'end', '----')
+    writeable.close()
+  })
+}).on('error', e => {
+  console.log(e, '\n', '+++++++++++++++++++++')
+}).end() */
+
+const getUrl = 'https://www.dropbox.com/s/85vnufe2a6hoi82/Order%20%23%209983%20-%20photo.jpg?dl=0'
+const userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
+const opt = {
+  port: 80,
+  host: '159.138.5.222',
+  method: 'GET',
+  path: 'https://www.dropbox.com/s/85vnufe2a6hoi82/Order%20%23%209983%20-%20photo.jpg?dl=0',
+  path: 'http://www.baidu.com',
+  headers: {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, sdch, br',
+    'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.6',
+    'Cache-Control': 'max-age=0',
+    'Cookie': '_ga=GA1.2.1653214693.1476773935; VISITOR_INFO1_LIVE=T3BczuPUIQo; SID=5QR6XEldVgveXzFtqjIcD480cHE18gBRd3xPo398vndcc5JNxOAZ-TgVp5jQx3CR-ePvgA.; HSID=APr2I8UwM-A-Lypbd; SSID=Ap4H3Td1nrV__-9tN; APISID=8bHyFV90pNBU5Z9p/A2DlJa2MyJLL4-RKP; SAPISID=4tZf4GDX7Dt5bNAt/A5vhaZe_DLzn-ECul; CONSENT=YES+CN.zh-CN+20160904-14-0; YSC=XVHk_pArWhE; PREF=cvdm=grid&f1=50000000&f6=1&f5=30&al=zh-CN&gl=HK',
+    'Upgrade-insecure-requests': '1',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.59 Safari/537.36',
+    'X-Chrome-Uma-Enabled': '1',
+    'X-Client-Data': 'CJa2yQEIorbJAQjBtskBCKmdygE=',
+    'Connection': 'keep-alive'
+  },
+}
+http.request(opt, res => {
+  res.on('error', err => {
+    console.log(err)
+  }).on('data', chunk => {
+    console.log(chunk.toString())
+  }).on('end', () => {
+    console.log('----', 'end', '----')
+  })
+}).on('error', err => {
+  console.log(err)
+}).end()

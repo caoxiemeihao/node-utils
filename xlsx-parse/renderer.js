@@ -107,6 +107,7 @@ const vm = new Vue({
       let now = 0
 
       vm.showDownloadPanel = true
+      // config 在 index.html 中引入
       for (let x = 0; x < config.downloadLength; x++) {
         download(arr[now = x])
       }

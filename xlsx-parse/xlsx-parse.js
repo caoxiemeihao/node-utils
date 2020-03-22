@@ -1,12 +1,14 @@
-const fs= require('fs')
+const fs = require('fs')
 const path = require('path')
+const https = require('https')
 const XLSX = require('xlsx')
 const request = require('request')
 const utils = require('./utils')
+const { config } = require('./config')
 
 
 // ---- 19-11-14 ---- add 兼容 cj、shopify-uploadery
-const AttachmentType = { cj: 'cj-compatible', uploadery: 'shopify-uploadery' }
+const AttachmentType = { cj: 'cj-compatible', uploadery: 'shopify-uploadery', dropbox: 'dropbox', other: 'other' }
 
 function parse(path, cb) {
   try {
@@ -110,31 +112,111 @@ function parse(path, cb) {
     })
     // ---- 19-06-08 mod 支持多 SKU --E--
 
-    process.emit('read-xlsx', processedArr)
-    cb instanceof Function && cb({ cmd: 'read-xlsx', data: processedArr })
+    const arrReady = arr => {
+      process.emit('read-xlsx', arr)
+      cb instanceof Function && cb({ cmd: 'read-xlsx', data: arr })
+    }
+
+    if (processedArr.find(_ => _.AttachmentType === AttachmentType.dropbox)) {
+      compatibleDropbox(processedArr).then(arr => arrReady(arr))
+    } else {
+      arrReady(processedArr)
+    }
+
   } catch (e) {
     throw e
   }
 }
 
+function downloadIMG({ url, filename, cb }) {
+  try {
+    request
+      .get(url)
+      .on('response', res => {
+        // console.log(res.statusCode, res.headers['content-type'])
+        utils.log.green(res.statusCode, url)
+        if (+res.statusCode !== 200) {
+          cb instanceof Function && cb({
+            cmd: 'img-error', data: {
+              statusCode: res.statusCode,
+              url
+            }
+          })
+        }
+      })
+      .on('data', buffer => {
+        // console.log(buffer)
+        cb instanceof Function && cb({ cmd: 'img-data', data: buffer })
+      })
+      .on('end', _ => {
+        // console.log(ev, 'end')
+        cb instanceof Function && cb({ cmd: 'img-end', data: '' })
+      })
+      .on('error', e => {
+        utils.log.error(e)
+      })
+      .pipe(fs.createWriteStream(filename))
+  } catch (e) { throw e }
+}
+
+// dropbox 网盘
+function compatibleDropbox(arr) {
+  console.log(arr)
+  const json = {}
+  const _arr = []
+  const getHtml = ({ arr, x }) => {
+    console.log(x, arr[x])
+    https.get(arr[x].Attachment, res => {
+      console.log('[dropbox] ->', arr[x].Attachment, res)
+      if (res.statusCode !== 200) {
+        arr[x].Attachment = ''
+        _arr.push(arr[x])
+      } else {
+        res.on('error', err => {
+          arr[x].Attachment = ''
+          _arr.push(arr[x])
+        }).on('data', chunk => {
+          console.log(chunk.toString())
+        }).on('end', () => {
+          getHtml({ arr, x: ++x })
+        })
+      }
+    }).on('error', err => {
+      if (err.code === 'ETIMEDOUT') {
+        utils.errorAlert(`无法访问外网\n${JSON.stringify(err)}`)
+      } else {
+        utils.errorAlert(JSON.stringify(err))
+      }
+    })
+  }
+  return new Promise(resolve => {
+    // for (let x = 0; x < config.downloadLength)
+    for (let x = 0; x < 1; x++) {
+      getHtml({ arr, x })
+    }
+  })
+}
+
+// ----------------------------- 解析 -s- -----------------------------
 // ---- 19-11-14 ---- add 兼容 cj、shopify-uploadery
 function compatible_CJ_Uploadery(Attachment, point) {
 
   // [error, type, Attachment]
   let result = [null, null, null]
 
-  // [key:value;key:value;]
+  // 元数据 [_uploadery_1:https://uploadery.s3.amazonaws.com/meta-charms/b7e878ee-imagepng_0.png;]
+  // [key:value;key:value;] 数据中可能有换行
   const isCj = /^\[((.|\n)+:(.|\n)+;)+\]$/.test(Attachment)
+
+  // 元数据 [{"thirdPardMessage":[{"name":"_uploadery_1","value":"https://uploadery.s3.amazonaws.com/meta-charms/f6de9657-aa6f2151ed151e9037f575519a6ad368.jpg"}],"type":1,"customMessgae":{"podType":1,"zone":{"front":{"showimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/5392159987651.jpg","editimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/2329113007948.png","podtype":"picandtext"}}}}]
+  const isUploadery = Attachment.includes('thirdPardMessage')
+
+  // 元数据 [{"image":"https://www.dropbox.com/s/85vnufe2a6hoi82/Order%20%23%209983%20-%20photo.jpg?dl=0"}]
+  const isDropbox = Attachment.includes('www.dropbox.com')
 
   try {
     if (isCj) {
       result[1] = AttachmentType.cj
-      // 元数据 CJ
-      // [_uploadery_1:https://uploadery.s3.amazonaws.com/meta-charms/b7e878ee-imagepng_0.png;]
-
-      // BUG: 19-11-19 元数据 CJ [有换行]
-      // [Texte personnalisé:One love, forever, Happy Birthday
-      //  je t’aime Imane.;Image:https://uploadery.s3.amazonaws.com/giordini/efa759e1-EB9F1108-93E7-45B5-BB8E-BE9B8530A607.jpeg;]
       result[2] = Attachment.substring(1, Attachment.length - 1)
         .split(';')
         .map(_ => {
@@ -153,11 +235,14 @@ function compatible_CJ_Uploadery(Attachment, point) {
           }
         })
         .filter(_ => _)
-    } else {
+    } else if (isUploadery) {
       result[1] = AttachmentType.uploadery
-      // 元数据 shopify
-      // [{"thirdPardMessage":[{"name":"_uploadery_1","value":"https://uploadery.s3.amazonaws.com/meta-charms/f6de9657-aa6f2151ed151e9037f575519a6ad368.jpg"}],"type":1,"customMessgae":{"podType":1,"zone":{"front":{"showimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/5392159987651.jpg","editimgurl":"https://cc-west-usa.oss-us-west-1.aliyuncs.com/20190225/2329113007948.png","podtype":"picandtext"}}}}]
       result[2] = JSON.parse(Attachment).map(_ => _.thirdPardMessage[0].value)
+    } else if (isDropbox) {
+      result[1] = AttachmentType.dropbox
+      result[2] = JSON.parse(Attachment).map(_ => _.image)
+    } else {
+      throw AttachmentType.other
     }
   } catch (e) {
     result[0] = Attachment
@@ -169,39 +254,7 @@ function compatible_CJ_Uploadery(Attachment, point) {
     return result
   }
 }
-
-function downloadIMG({ url, filename, cb }) {
-  try {
-    request
-    .get(url)
-    .on('response', res => {
-      // console.log(res.statusCode, res.headers['content-type'])
-      utils.log.green(res.statusCode, url)
-      if (+res.statusCode !== 200) {
-        cb instanceof Function && cb({ cmd: 'img-error', data: {
-          statusCode: res.statusCode,
-          url
-        }})
-      }
-    })
-    .on('data', buffer => {
-      // console.log(buffer)
-      cb instanceof Function && cb({ cmd: 'img-data', data: buffer })
-    })
-    .on('end', _ => {
-      // console.log(ev, 'end')
-      cb instanceof Function && cb({ cmd: 'img-end', data: '' })
-    })
-    .on('error', e => {
-      utils.log.error(e)
-    })
-    .pipe(fs.createWriteStream(filename))
-  } catch (e) { throw e }
-}
-
-function getKeys(json, field) {
-  return Object.keys(json).filter(key => key.startsWith(field))
-}
+// ----------------------------- 解析 -e- -----------------------------
 
 module.exports = {
   parse,
