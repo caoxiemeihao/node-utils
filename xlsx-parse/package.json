@@ -21,7 +21,7 @@
   "author": "草鞋没号",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "^5.0.2",
+    "electron": "^9.1.0",
     "electron-connect": "^0.6.3",
     "gulp": "^4.0.2"
   },
